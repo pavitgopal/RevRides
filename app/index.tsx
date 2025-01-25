@@ -18,6 +18,7 @@ import TripPlanDetail from './components/sheets/route_planning/TripPlanDetail';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { BottomSheetModalMethods } from '@gorhom/bottom-sheet/lib/typescript/types';
 
 // this needs to be out of component and not a state
 // weird stuff happens if it is a state
@@ -38,10 +39,22 @@ const Home = () => {
     const stopTimetableSheetRef = useRef<BottomSheetModal>(null);
     const settingsSheetRef = useRef<BottomSheetModal>(null);
 
+    
     // Route Planning
     const inputRouteSheetRef = useRef<BottomSheetModal>(null);
     const tripPlanDetailSheetRef = useRef<BottomSheetModal>(null);
-
+    
+    const sheetNameToRef: { [key: string]: React.RefObject<BottomSheetModalMethods> } = {
+        routeList: routesListSheetRef,
+        alerts: alertDetailSheetRef,
+        routeDetails: routeDetailSheetRef,
+        stopTimetable: stopTimetableSheetRef,
+        settings: settingsSheetRef,
+        alertsDetail: alertDetailSheetRef,
+        inputRoute: inputRouteSheetRef,
+        tripPlanDetail: tripPlanDetailSheetRef
+    }
+    
     BackHandler.addEventListener("hardwareBackPress", () => {
         const currentSheet = sheetStack.at(-1)
         if (!currentSheet || currentSheet == "routeList") return false
@@ -64,32 +77,13 @@ const Home = () => {
         sheetStack = ["routeList"]
 
         setPresentSheet((sheet) => {
-            switch (sheet) {
-                case "alerts":
-                    alertListSheetRef.current?.present();
-                    break;
-                case "routeDetails":
-                    routeDetailSheetRef.current?.present();
-                    break;
-                case "stopTimetable":
-                    stopTimetableSheetRef.current?.present();
-                    break;
-                case "settings":
-                    settingsSheetRef.current?.present();
-                    break;
-                case "alertsDetail":
-                    alertDetailSheetRef.current?.present();
-                    break;
-                case "inputRoute":
-                    inputRouteSheetRef.current?.present();
-                    break;
-                case "tripPlanDetail":
-                    tripPlanDetailSheetRef.current?.present();
-                    break;
-                default:
-                    return;
-            }
-
+            // There is a problem with dismiss on android. 
+            // Seems like the reference isn't able to be detected/accessible?
+            // .close is slightly less performant but is more reliable due to sheet not being removed from the view hierarchy
+            const prevSheet = sheetNameToRef[sheetStack.at(-1)!];
+            const newSheet = sheetNameToRef[sheet];
+            prevSheet?.current?.close();
+            newSheet?.current?.present();
             sheetStack.push(sheet)
         })
     
@@ -97,33 +91,13 @@ const Home = () => {
             // run any defined close sheet steps
             callSheetCloseCallback(sheet)
 
-            switch (sheet) {
-                case "alerts":
-                    alertListSheetRef.current?.dismiss();
-                    break;
-                case "routeDetails":
-                    routeDetailSheetRef.current?.dismiss();
-                    break;
-                case "stopTimetable":
-                    stopTimetableSheetRef.current?.dismiss();
-                    break;
-                case "settings":
-                    settingsSheetRef.current?.dismiss();
-                    break;
-                case "alertsDetail":
-                    alertDetailSheetRef.current?.dismiss();
-                    break;
-                case "inputRoute":
-                    inputRouteSheetRef.current?.dismiss();
-                    break;
-                case "tripPlanDetail":
-                    tripPlanDetailSheetRef.current?.dismiss();
-                    break;
-                default:
-                    return;
-            }
+            // See comments in setPresentSheet()
+            const prevSheet = sheetNameToRef[sheet];
+            prevSheet?.current?.close();
+            sheetStack.pop();
 
-            sheetStack = sheetStack.slice(0, -1)
+            const newSheet = sheetNameToRef[sheetStack.at(-1)!];
+            newSheet?.current?.present();
         })
     }, [])
 

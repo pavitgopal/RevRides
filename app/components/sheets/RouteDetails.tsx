@@ -23,14 +23,14 @@ const RouteDetails: React.FC<SheetProps> = ({ sheetRef }) => {
 
     const currentSelectedRoute = useAppStore((state) => state.selectedRoute);
     const clearSelectedRoute = useAppStore((state) => state.clearSelectedRoute);
-
+    
     const [futurePosition, setFuturePosition] = useState(-1);
-
+    
+    const selectedRouteDirection = useAppStore(state => state.selectedRouteDirection);
     const setSelectedRouteDirection = useAppStore(state => state.setSelectedRouteDirection);
     const setSelectedStop = useAppStore(state => state.setSelectedStop);
     const setPoppedUpStopCallout = useAppStore(state => state.setPoppedUpStopCallout);
     const setSheetCloseCallback = useAppStore(state => state.setSheetCloseCallback);
-    const selectedRouteDirection = useAppStore(state => state.selectedRouteDirection);
     const setScrollToStop = useAppStore(state => state.setScrollToStop);
     const dismissSheet = useAppStore((state) => state.dismissSheet);
     const theme = useAppStore(state => state.theme);
@@ -54,6 +54,10 @@ const RouteDetails: React.FC<SheetProps> = ({ sheetRef }) => {
     function getPatternPathForSelectedRoute(): IPatternPath | undefined {
         if (!selectedRoute) return undefined;
         return selectedRoute.patternPaths.find(direction => direction.patternKey === selectedRoute.directionList[selectedDirectionIndex]?.patternList[0]?.key)
+    }
+
+    const handleDismiss = () => {
+        dismissSheet("routeDetails");
     }
 
     // When a new route is selected or the direction of the route is changed, update the stops
@@ -159,7 +163,7 @@ const RouteDetails: React.FC<SheetProps> = ({ sheetRef }) => {
                         />
                         <Text style={{ fontWeight: 'bold', fontSize: 28, flex: 1, color: theme.text }}>{selectedRoute?.name ?? "Something went wrong"}</Text>
 
-                        <TouchableOpacity style={{ alignContent: 'center', justifyContent: 'flex-end' }} onPress={() => dismissSheet("routeDetails")}>
+                        <TouchableOpacity style={{ alignContent: 'center', justifyContent: 'flex-end' }} onPress={handleDismiss}>
                             <Ionicons name="close-circle" size={28} color={theme.exitButton} />
                         </TouchableOpacity>
                     </View>
