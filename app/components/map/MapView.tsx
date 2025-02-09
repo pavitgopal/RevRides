@@ -312,6 +312,7 @@ const Map: React.FC = () => {
                 showsMyLocationButton={false} // we have our own
                 // fix dark mode android map syling
                 customMapStyle={Platform.OS == "android" && theme.mode == "dark" ? DarkGoogleMaps : []}
+                userInterfaceStyle={Platform.OS == "ios" ? "dark" : undefined}
             >
                 {/* Route Polylines */}
                 {drawnRoutes.map((drawnRoute) => {
